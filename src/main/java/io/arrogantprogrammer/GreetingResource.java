@@ -1,10 +1,7 @@
 package io.arrogantprogrammer;
 
 import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 
@@ -14,6 +11,7 @@ import java.util.Set;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Path("/hello")
+@Produces(MediaType.TEXT_PLAIN)
 public class GreetingResource {
 
     private static final Logger LOGGER = getLogger(GreetingResource.class);
@@ -22,14 +20,23 @@ public class GreetingResource {
     GreetingService greetingService;
 
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
     public String hello() {
         return "Hello from RESTEasy Reactive";
     }
 
     @GET
+    @Path("/name/{name}")
+    public String helloName(@PathParam("name") String name) {
+        var event = new GreetingEvent();
+        event.begin();
+        event.counter = event.counter++;
+        event.message = "Hello, " + name + "1";
+        event.commit();
+        return "Hello, " + name + "!";
+    }
+
+    @GET
     @Path("/delay/{ms}")
-    @Produces(MediaType.TEXT_PLAIN)
     public String helloWithDelay(@PathParam("ms") long delay) {
         LOGGER.debug("Delaying for {} ms", delay);
         try {
@@ -42,7 +49,6 @@ public class GreetingResource {
 
     @GET
     @Path("/memory/{mb}")
-    @Produces(MediaType.TEXT_PLAIN)
     public String helloWithMemory(@PathParam("mb") long mb) {
         LOGGER.debug("Allocating {} MB of memory", mb);
         byte[] bytes = new byte[(int) (mb * 1024 * 1024)];
@@ -51,7 +57,6 @@ public class GreetingResource {
 
     @GET
     @Path("/blocking/{ms}")
-    @Produces(MediaType.TEXT_PLAIN)
     public String helloBlocking(@PathParam("ms") long delay) {
         LOGGER.debug("Blocking for {} ms", delay);
         try {
@@ -64,7 +69,6 @@ public class GreetingResource {
 
     @GET
     @Path("/filelogging/{num}")
-    @Produces(MediaType.TEXT_PLAIN)
     public String helloFileLogging(@PathParam("num") long num) {
         LOGGER.debug("Logging to file");
         Set<Greeting> greetingSet = new HashSet<>();
